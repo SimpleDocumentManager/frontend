@@ -9,8 +9,8 @@ const eslintConfig = defineConfig([
     eslintPluginPrettierRecommended,
     {
         rules: {
-            'prettier/prettier': ['error', { endOfLine: 'auto' }]
-        }
+            'prettier/prettier': ['error', { endOfLine: 'auto' }],
+        },
     },
     // Override default ignores of eslint-config-next.
     globalIgnores([

@@ -6,8 +6,10 @@
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
-        "lint": "eslint",
-        "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+        "lint": "eslint \"{src,apps,libs,test}/**/*.{ts,tsx,css}\" --fix",
+        "lint:check": "eslint \"{src,apps,libs,test}/**/*.{ts,tsx,css}\"",
+        "format": "prettier --write \"{src,apps,libs,test}/**/*.{ts,tsx,css}\"",
+        "format:check": "prettier --check \"{src,apps,libs,test}/**/*.{ts,tsx,css}\"",
         "prepare": "husky || true"
     },
     "dependencies": {
@@ -25,7 +27,6 @@
         "eslint-config-next": "16.1.5",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-prettier": "^5.5.5",
-        "lint-staged": "^16.2.7",
         "prettier": "3.8.1",
         "tailwindcss": "^4",
         "typescript": "^5"
