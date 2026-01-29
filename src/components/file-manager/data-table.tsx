@@ -76,7 +76,17 @@ export default function FileManagerDataTable({ items }: FileManagerDataTableProp
                         items.map((item) => (
                             <TableRow key={item.id} className="cursor-pointer" onClick={() => handleItemClick(item)}>
                                 <TableCell>{getFileIconComponent(item)}</TableCell>
-                                <TableCell className="font-medium">{item.filename}</TableCell>
+                                <TableCell className="font-medium">
+                                    <span>{item.filename}</span>
+                                    {item.folder !== currentDir && (
+                                        <span className="ml-1.5 mt-1.5 inline-flex max-w-full items-center gap-1 rounded-md border border-border/60 bg-muted/50 px-2 py-0.5 text-xs text-muted-foreground">
+                                            <Folder className="h-3 w-3 shrink-0 opacity-70" />
+                                            <span className="truncate">
+                                                {item.folder === '/' ? 'root' : item.folder}
+                                            </span>
+                                        </span>
+                                    )}
+                                </TableCell>
                                 <TableCell>{item.isFolder ? '-' : formatFileSize(item.size)}</TableCell>
                                 <TableCell>{item.isFolder ? 'Folder' : item.mimeType || 'Unknown'}</TableCell>
                                 <TableCell>{new Date(item.updatedAt).toLocaleDateString()}</TableCell>

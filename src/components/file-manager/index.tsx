@@ -3,18 +3,43 @@
 import FileManagerNewFolder from '@/components/file-manager/new-folder'
 import FileManagerUpload from '@/components/file-manager/upload'
 import { Input } from '@/components/ui/input'
+import { useDirSearchParam } from '@/hooks/dir'
+import axios, { getAxiosErrorMessage } from '@/lib/axios'
+import { StorageData } from '@/types/storage'
 import { Search } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Breadcrumb from './breadcrumb'
 import DataTable from './data-table'
 
 export default function FileManager() {
     const router = useRouter()
     const searchParams = useSearchParams()
+
+    const currentDir = useDirSearchParam()
     const searchQuery = searchParams.get('search') || ''
 
     const [searchInput, setSearchInput] = useState(searchQuery)
+    const [storages, setStorages] = useState<StorageData[]>([])
+
+    const loadStorages = useCallback(async () => {
+        try {
+            const res = await axios.get('/v1/storages', {
+                params: {
+                    dir: currentDir,
+                    search: searchQuery,
+                },
+            })
+            setStorages(res.data.data)
+        } catch (err) {
+            console.error(getAxiosErrorMessage(err))
+        }
+    }, [currentDir, searchQuery])
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        void loadStorages()
+    }, [loadStorages])
 
     return (
         <div className="flex flex-col gap-6 p-6">
@@ -39,13 +64,12 @@ export default function FileManager() {
                 </div>
 
                 <div className="flex gap-2 justify-between">
-                    <FileManagerNewFolder />
-
-                    <FileManagerUpload />
+                    <FileManagerNewFolder reload={loadStorages} />
+                    <FileManagerUpload reload={loadStorages} />
                 </div>
             </div>
 
-            <DataTable items={[]} />
+            <DataTable items={storages} />
         </div>
     )
 }

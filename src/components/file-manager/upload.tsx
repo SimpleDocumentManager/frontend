@@ -12,15 +12,22 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { useDirSearchParam } from '@/hooks/dir'
+import axios, { getAxiosErrorMessage } from '@/lib/axios'
 import type { UploadFileFormValues } from '@/lib/schemas'
 import { UploadFileSchema } from '@/lib/schemas'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Upload } from 'lucide-react'
+import { Loader2, Upload } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 
-export default function FileManagerUpload() {
+interface FileManagerUploadProps {
+    reload: () => void
+}
+
+export default function FileManagerUpload({ reload }: FileManagerUploadProps) {
     const [isUploadOpen, setIsUploadOpen] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
     const currentDir = useDirSearchParam()
 
     const uploadFileForm = useForm<UploadFileFormValues>({
@@ -30,15 +37,35 @@ export default function FileManagerUpload() {
         },
     })
 
-    const onUploadSubmit = (data: UploadFileFormValues) => {
-        const file = data.file as File
-        console.log('Upload file:', file.name, 'to dir:', currentDir)
-        uploadFileForm.reset()
-        setIsUploadOpen(false)
+    const handleOpenChange = (open: boolean) => {
+        if (!open) {
+            setError(null)
+        }
+        setIsUploadOpen(open)
+    }
+
+    const onUploadSubmit = async (data: UploadFileFormValues) => {
+        setIsLoading(true)
+        setError(null)
+
+        const formData = new FormData()
+        formData.append('file', data.file, data.file.name)
+        formData.append('dir', currentDir)
+
+        try {
+            await axios.post('/v1/storages', formData)
+            uploadFileForm.reset()
+            setIsUploadOpen(false)
+            reload()
+        } catch (err) {
+            setError(getAxiosErrorMessage(err))
+        } finally {
+            setIsLoading(false)
+        }
     }
 
     return (
-        <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
+        <Dialog open={isUploadOpen} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 <Button>
                     <Upload className="mr-2 h-4 w-4" />
@@ -61,12 +88,13 @@ export default function FileManagerUpload() {
                                     <FormControl>
                                         <Input
                                             type="file"
+                                            disabled={isLoading}
                                             onChange={(e) => {
                                                 const file = e.target.files?.[0]
                                                 if (file) {
-                                                    onChange(file as unknown as File)
+                                                    onChange(file)
                                                 } else {
-                                                    onChange(undefined as unknown as File)
+                                                    onChange(undefined)
                                                 }
                                             }}
                                             {...field}
@@ -82,11 +110,31 @@ export default function FileManagerUpload() {
                                 </FormItem>
                             )}
                         />
+                        {error && (
+                            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
+                        )}
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setIsUploadOpen(false)}>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsUploadOpen(false)}
+                                disabled={isLoading}
+                            >
                                 Cancel
                             </Button>
-                            <Button type="submit">Upload</Button>
+                            <Button type="submit" disabled={isLoading}>
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Uploading...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Upload className="mr-2 h-4 w-4" />
+                                        Upload
+                                    </>
+                                )}
+                            </Button>
                         </DialogFooter>
                     </form>
                 </Form>
