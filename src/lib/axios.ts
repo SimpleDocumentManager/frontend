@@ -55,6 +55,20 @@ const onAxiosRequest = async (config: InternalAxiosRequestConfig) => {
 
 axios.interceptors.request.use(onAxiosRequest, Promise.reject)
 
-axios.interceptors.response.use(Promise.resolve, onAxiosError)
+axios.interceptors.response.use(undefined, onAxiosError)
+
+export function getAxiosErrorMessage(error: unknown): string {
+    if (error instanceof AxiosError) {
+        const message = error.response?.data?.message
+        if (Array.isArray(message)) {
+            return message.join(', ')
+        }
+        return message || 'Something went wrong, please try again later'
+    }
+    if (error instanceof Error) {
+        return error.message
+    }
+    return 'Something went wrong, please try again later'
+}
 
 export default axios
