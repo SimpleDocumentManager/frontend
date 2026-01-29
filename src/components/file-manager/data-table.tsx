@@ -90,7 +90,7 @@ export default function FileManagerDataTable({ items }: FileManagerDataTableProp
                                 <TableCell>{item.isFolder ? '-' : formatFileSize(item.size)}</TableCell>
                                 <TableCell>{item.isFolder ? 'Folder' : item.mimeType || 'Unknown'}</TableCell>
                                 <TableCell>{new Date(item.updatedAt).toLocaleDateString()}</TableCell>
-                                <TableCell>{item.uploader.username}</TableCell>
+                                <TableCell>{item.uploader?.name || item.uploader?.username}</TableCell>
                             </TableRow>
                         ))
                     )}
