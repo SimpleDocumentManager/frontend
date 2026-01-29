@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import jsCookie from 'js-cookie'
 
-export default function LoginGuard() {
+export default function LoginGuard({ children }: { children: React.ReactNode }) {
     const router = useRouter()
 
     useEffect(() => {
@@ -14,5 +14,5 @@ export default function LoginGuard() {
         }
     }, [router])
 
-    return null
+    return <>{children}</>
 }
